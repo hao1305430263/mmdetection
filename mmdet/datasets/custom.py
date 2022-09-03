@@ -56,17 +56,19 @@ class CustomDataset(Dataset):
 
     PALETTE = None
 
-    def __init__(self,
-                 ann_file,
-                 pipeline,
-                 classes=None,
-                 data_root=None,
-                 img_prefix='',
-                 seg_prefix=None,
-                 proposal_file=None,
-                 test_mode=False,
-                 filter_empty_gt=True,
-                 file_client_args=dict(backend='disk')):
+    def __init__(
+        self,
+        ann_file,
+        pipeline,
+        classes=None,
+        data_root=None,
+        img_prefix="",
+        seg_prefix=None,
+        proposal_file=None,
+        test_mode=False,
+        filter_empty_gt=True,
+        file_client_args=dict(backend="disk"),
+    ):
         self.ann_file = ann_file
         self.data_root = data_root
         self.img_prefix = img_prefix
@@ -85,33 +87,32 @@ class CustomDataset(Dataset):
                 self.img_prefix = osp.join(self.data_root, self.img_prefix)
             if not (self.seg_prefix is None or osp.isabs(self.seg_prefix)):
                 self.seg_prefix = osp.join(self.data_root, self.seg_prefix)
-            if not (self.proposal_file is None
-                    or osp.isabs(self.proposal_file)):
-                self.proposal_file = osp.join(self.data_root,
-                                              self.proposal_file)
+            if not (self.proposal_file is None or osp.isabs(self.proposal_file)):
+                self.proposal_file = osp.join(self.data_root, self.proposal_file)
         # load annotations (and proposals)
-        if hasattr(self.file_client, 'get_local_path'):
+        if hasattr(self.file_client, "get_local_path"):
             with self.file_client.get_local_path(self.ann_file) as local_path:
                 self.data_infos = self.load_annotations(local_path)
         else:
             warnings.warn(
-                'The used MMCV version does not have get_local_path. '
-                f'We treat the {self.ann_file} as local paths and it '
-                'might cause errors if the path is not a local path. '
-                'Please use MMCV>= 1.3.16 if you meet errors.')
+                "The used MMCV version does not have get_local_path. "
+                f"We treat the {self.ann_file} as local paths and it "
+                "might cause errors if the path is not a local path. "
+                "Please use MMCV>= 1.3.16 if you meet errors."
+            )
             self.data_infos = self.load_annotations(self.ann_file)
 
         if self.proposal_file is not None:
-            if hasattr(self.file_client, 'get_local_path'):
-                with self.file_client.get_local_path(
-                        self.proposal_file) as local_path:
+            if hasattr(self.file_client, "get_local_path"):
+                with self.file_client.get_local_path(self.proposal_file) as local_path:
                     self.proposals = self.load_proposals(local_path)
             else:
                 warnings.warn(
-                    'The used MMCV version does not have get_local_path. '
-                    f'We treat the {self.ann_file} as local paths and it '
-                    'might cause errors if the path is not a local path. '
-                    'Please use MMCV>= 1.3.16 if you meet errors.')
+                    "The used MMCV version does not have get_local_path. "
+                    f"We treat the {self.ann_file} as local paths and it "
+                    "might cause errors if the path is not a local path. "
+                    "Please use MMCV>= 1.3.16 if you meet errors."
+                )
                 self.proposals = self.load_proposals(self.proposal_file)
         else:
             self.proposals = None
@@ -150,7 +151,7 @@ class CustomDataset(Dataset):
             dict: Annotation info of specified index.
         """
 
-        return self.data_infos[idx]['ann']
+        return self.data_infos[idx]["ann"]
 
     def get_cat_ids(self, idx):
         """Get category ids by index.
@@ -162,25 +163,24 @@ class CustomDataset(Dataset):
             list[int]: All categories in the image of specified index.
         """
 
-        return self.data_infos[idx]['ann']['labels'].astype(np.int).tolist()
+        return self.data_infos[idx]["ann"]["labels"].astype(np.int).tolist()
 
     def pre_pipeline(self, results):
         """Prepare results dict for pipeline."""
-        results['img_prefix'] = self.img_prefix
-        results['seg_prefix'] = self.seg_prefix
-        results['proposal_file'] = self.proposal_file
-        results['bbox_fields'] = []
-        results['mask_fields'] = []
-        results['seg_fields'] = []
+        results["img_prefix"] = self.img_prefix
+        results["seg_prefix"] = self.seg_prefix
+        results["proposal_file"] = self.proposal_file
+        results["bbox_fields"] = []
+        results["mask_fields"] = []
+        results["seg_fields"] = []
 
     def _filter_imgs(self, min_size=32):
         """Filter images too small."""
         if self.filter_empty_gt:
-            warnings.warn(
-                'CustomDataset does not support filtering empty gt images.')
+            warnings.warn("CustomDataset does not support filtering empty gt images.")
         valid_inds = []
         for i, img_info in enumerate(self.data_infos):
-            if min(img_info['width'], img_info['height']) >= min_size:
+            if min(img_info["width"], img_info["height"]) >= min_size:
                 valid_inds.append(i)
         return valid_inds
 
@@ -193,7 +193,7 @@ class CustomDataset(Dataset):
         self.flag = np.zeros(len(self), dtype=np.uint8)
         for i in range(len(self)):
             img_info = self.data_infos[i]
-            if img_info['width'] / img_info['height'] > 1:
+            if img_info["width"] / img_info["height"] > 1:
                 self.flag[i] = 1
 
     def _rand_another(self, idx):
@@ -236,7 +236,7 @@ class CustomDataset(Dataset):
         ann_info = self.get_ann_info(idx)
         results = dict(img_info=img_info, ann_info=ann_info)
         if self.proposals is not None:
-            results['proposals'] = self.proposals[idx]
+            results["proposals"] = self.proposals[idx]
         self.pre_pipeline(results)
         return self.pipeline(results)
 
@@ -254,7 +254,7 @@ class CustomDataset(Dataset):
         img_info = self.data_infos[idx]
         results = dict(img_info=img_info)
         if self.proposals is not None:
-            results['proposals'] = self.proposals[idx]
+            results["proposals"] = self.proposals[idx]
         self.pre_pipeline(results)
         return self.pipeline(results)
 
@@ -281,7 +281,7 @@ class CustomDataset(Dataset):
         elif isinstance(classes, (tuple, list)):
             class_names = classes
         else:
-            raise ValueError(f'Unsupported type {type(classes)} of classes.')
+            raise ValueError(f"Unsupported type {type(classes)} of classes.")
 
         return class_names
 
@@ -295,7 +295,7 @@ class CustomDataset(Dataset):
             corresponds to the image index that contains the label.
         """
         if self.CLASSES is None:
-            raise ValueError('self.CLASSES can not be None')
+            raise ValueError("self.CLASSES can not be None")
         # sort the label index
         cat2imgs = {i: [] for i in range(len(self.CLASSES))}
         for i in range(len(self)):
@@ -307,13 +307,15 @@ class CustomDataset(Dataset):
     def format_results(self, results, **kwargs):
         """Place holder to format result to dataset specific output."""
 
-    def evaluate(self,
-                 results,
-                 metric='mAP',
-                 logger=None,
-                 proposal_nums=(100, 300, 1000),
-                 iou_thr=0.5,
-                 scale_ranges=None):
+    def evaluate(
+        self,
+        results,
+        metric="mAP",
+        logger=None,
+        proposal_nums=(100, 300, 1000),
+        iou_thr=0.5,
+        scale_ranges=None,
+    ):
         """Evaluate the dataset.
 
         Args:
@@ -332,13 +334,13 @@ class CustomDataset(Dataset):
         if not isinstance(metric, str):
             assert len(metric) == 1
             metric = metric[0]
-        allowed_metrics = ['mAP', 'recall']
+        allowed_metrics = ["mAP", "recall"]
         if metric not in allowed_metrics:
-            raise KeyError(f'metric {metric} is not supported')
+            raise KeyError(f"metric {metric} is not supported")
         annotations = [self.get_ann_info(i) for i in range(len(self))]
         eval_results = OrderedDict()
         iou_thrs = [iou_thr] if isinstance(iou_thr, float) else iou_thr
-        if metric == 'mAP':
+        if metric == "mAP":
             assert isinstance(iou_thrs, list)
             mean_aps = []
             for iou_thr in iou_thrs:
@@ -349,36 +351,40 @@ class CustomDataset(Dataset):
                     scale_ranges=scale_ranges,
                     iou_thr=iou_thr,
                     dataset=self.CLASSES,
-                    logger=logger)
+                    logger=logger,
+                )
                 mean_aps.append(mean_ap)
-                eval_results[f'AP{int(iou_thr * 100):02d}'] = round(mean_ap, 3)
-            eval_results['mAP'] = sum(mean_aps) / len(mean_aps)
-        elif metric == 'recall':
-            gt_bboxes = [ann['bboxes'] for ann in annotations]
+                eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
+            eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
+        elif metric == "recall":
+            gt_bboxes = [ann["bboxes"] for ann in annotations]
             recalls = eval_recalls(
-                gt_bboxes, results, proposal_nums, iou_thr, logger=logger)
+                gt_bboxes, results, proposal_nums, iou_thr, logger=logger
+            )
             for i, num in enumerate(proposal_nums):
                 for j, iou in enumerate(iou_thrs):
-                    eval_results[f'recall@{num}@{iou}'] = recalls[i, j]
+                    eval_results[f"recall@{num}@{iou}"] = recalls[i, j]
             if recalls.shape[1] > 1:
                 ar = recalls.mean(axis=1)
                 for i, num in enumerate(proposal_nums):
-                    eval_results[f'AR@{num}'] = ar[i]
+                    eval_results[f"AR@{num}"] = ar[i]
         return eval_results
 
     def __repr__(self):
         """Print the number of instance number."""
-        dataset_type = 'Test' if self.test_mode else 'Train'
-        result = (f'\n{self.__class__.__name__} {dataset_type} dataset '
-                  f'with number of images {len(self)}, '
-                  f'and instance counts: \n')
+        dataset_type = "Test" if self.test_mode else "Train"
+        result = (
+            f"\n{self.__class__.__name__} {dataset_type} dataset "
+            f"with number of images {len(self)}, "
+            f"and instance counts: \n"
+        )
         if self.CLASSES is None:
-            result += 'Category names are not provided. \n'
+            result += "Category names are not provided. \n"
             return result
         instance_count = np.zeros(len(self.CLASSES) + 1).astype(int)
         # count the instance number in each image
         for idx in range(len(self)):
-            label = self.get_ann_info(idx)['labels']
+            label = self.get_ann_info(idx)["labels"]
             unique, counts = np.unique(label, return_counts=True)
             if len(unique) > 0:
                 # add the occurrence number to each class
@@ -387,19 +393,19 @@ class CustomDataset(Dataset):
                 # background is the last index
                 instance_count[-1] += 1
         # create a table with category count
-        table_data = [['category', 'count'] * 5]
+        table_data = [["category", "count"] * 5]
         row_data = []
         for cls, count in enumerate(instance_count):
             if cls < len(self.CLASSES):
-                row_data += [f'{cls} [{self.CLASSES[cls]}]', f'{count}']
+                row_data += [f"{cls} [{self.CLASSES[cls]}]", f"{count}"]
             else:
                 # add the background number
-                row_data += ['-1 background', f'{count}']
+                row_data += ["-1 background", f"{count}"]
             if len(row_data) == 10:
                 table_data.append(row_data)
                 row_data = []
         if len(row_data) >= 2:
-            if row_data[-1] == '0':
+            if row_data[-1] == "0":
                 row_data = row_data[:-2]
             if len(row_data) >= 2:
                 table_data.append([])
