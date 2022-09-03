@@ -144,8 +144,8 @@ class my_CustomDataset(Dataset):
                 continue
             info0 = self.coco0.load_imgs([i])[0]
             info1 = self.coco1.load_imgs([i])[0]
-            info0["filename"] = info0["file_name"]
-            info1["filename"] = info1["file_name"]
+            info0["filename0"] = info0["file_name"]
+            info1["filename1"] = info1["file_name"]
             data_infos.append([info0, info1])
             ann_ids = self.coco0.get_ann_ids(img_ids=[i])
             total_ann_ids.extend(ann_ids)
