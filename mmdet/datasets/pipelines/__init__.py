@@ -50,9 +50,10 @@ from .transforms import (
     SegRescale,
     YOLOXHSVRandomAug,
 )
-from .my_loading import my_LoadImageFromFile, my_LoadAnnotations
+from .my_loading import my_LoadImageFromFile
 
 __all__ = [
+    "my_LoadImageFromFile",
     "Compose",
     "to_tensor",
     "ToTensor",

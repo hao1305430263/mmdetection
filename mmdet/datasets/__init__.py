@@ -21,7 +21,7 @@ from .xml_style import XMLDataset
 from .my_custom import my_CustomDataset
 
 __all__ = [
-    "my_CocoDataset",
+    "my_CustomDataset",
     "CustomDataset",
     "XMLDataset",
     "CocoDataset",
